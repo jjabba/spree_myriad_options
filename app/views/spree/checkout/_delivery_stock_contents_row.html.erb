@@ -1,0 +1,15 @@
+<tbody>
+  <% ship_form.object.manifest.each do |item| %>
+    <% line_item = item.line_item %>
+    <tr class="stock-item">
+      <td class="item-image"><%= mini_image(item.variant) %></td>
+      <td class="item-name"><%= item.variant.name %>
+        <% if line_item.has_options? %>
+          <%= render :partial => 'spree/shared/order_line_item_options', :locals => { :item => line_item } %>
+        <% end %>
+      </td>
+      <td class="item-qty"><%= line_item.quantity %></td>
+      <td class="item-price"><%= line_item.single_money.to_html %></td>
+    </tr>
+  <% end %>
+</tbody>

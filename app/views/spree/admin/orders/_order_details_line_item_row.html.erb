@@ -1,0 +1,3 @@
+<%- if item.has_options? %>
+  <%= render :partial => 'spree/shared/order_line_item_options', :locals => { :item => item } %>
+<% end %>

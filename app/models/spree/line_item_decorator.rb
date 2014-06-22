@@ -10,10 +10,14 @@ Spree::LineItem.class_eval do
   end
 
   def copy_price
-    self.price = variant.price
+    if variant
+      self.price = variant.price
+      self.cost_price = variant.cost_price if cost_price.nil?
+      self.currency = variant.currency if currency.nil?
 
-    self.option_values.each do |val|
-      self.price += val.adder
+      self.option_values.each do |val|
+        self.price += val.adder
+      end
     end
   end
 

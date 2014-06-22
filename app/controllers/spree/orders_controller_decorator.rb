@@ -1,31 +1,19 @@
 Spree::OrdersController.class_eval do
 
-  alias_method :populate_without_spree_myriad_options, :populate
-
-  # prepend to orders#populate to
-  # look for params[:options] and attach the option values
-  # to the add_variant call
   def populate
-    @order = current_order(true)
+    populator = Spree::OrderPopulator.new(current_order(create_order_if_necessary: true), current_currency)
+    
+    option_values = (params[:options].present? ? Spree::OptionValue.where(:id => params[:options].values.map(&:to_i)) : [])
 
-    if params[:options].present? && params[:variants]
+    if populator.populate(params[:variant_id], params[:quantity], { :option_values => option_values, :customizations => params[:customizations] })
+      current_order.ensure_updated_shipments
 
-      params[:variants].each do |variant_id, quantity|
-        if variant = Spree::Variant.find(variant_id)
-          quantity = quantity.to_i
-
-          option_values = Spree::OptionValue.find(params[:options].values.map(&:to_i))
-
-          line_item = @order.add_variant(variant, quantity, option_values)
-
-          line_item.customizations = params[:customizations] if params[:customizations]
-        end
+      respond_with(@order) do |format|
+        format.html { redirect_to cart_path }
       end
-
-      params.delete(:variants) # prevent populate_orig from adding again
+    else
+      flash[:error] = populator.errors.full_messages.join(" ")
+      redirect_to :back
     end
-
-    populate_without_spree_myriad_options
   end
-
 end
